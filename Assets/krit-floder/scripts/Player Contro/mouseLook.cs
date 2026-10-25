@@ -10,8 +10,10 @@ public class mouseLook : MonoBehaviour
     float xRotation;
     float yRotation;
 
-    // เปลี่ยนเป็น public เพื่อให้สคริปต์อื่นเข้าถึงง่าย หรือใช้ Property
     public float zRotation;
+
+    // [เพิ่มเข้ามา] ตัวแปรสำหรับเปิด-ปิดการหันกล้อง (เช่น เวลาเปิด UI อ่านโน้ต)
+    public bool canLook = true;
 
     void Start()
     {
@@ -21,6 +23,9 @@ public class mouseLook : MonoBehaviour
 
     private void LateUpdate()
     {
+        // ถ้าถูกสั่งห้ามหันกล้อง ให้ข้ามการคำนวณเมาส์ไปเลย
+        if (!canLook) return;
+
         float mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * sensX;
         float mouseY = Input.GetAxisRaw("Mouse Y") * Time.deltaTime * sensY;
 
@@ -28,7 +33,6 @@ public class mouseLook : MonoBehaviour
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        // หมุนกล้องโดยรวมค่า zRotation เข้าไปด้วย
         transform.rotation = Quaternion.Euler(xRotation, yRotation, zRotation);
 
         if (ort != null)

@@ -8,7 +8,7 @@ public class PTModularLoopManager : MonoBehaviour
     public static PTModularLoopManager Instance { get; private set; }
 
     [Header("Staircase Prefab & Settings")]
-    [Tooltip("Prefab ของบันได (ต้องมีจุดเชื่อมต่อ NextPoint ไว้ที่ปลายสุดด้านบนของบันได)")]
+    [Tooltip("Prefab ของบันไดปกติ (ค่าเริ่มต้น)")]
     public GameObject stairPrefab;
 
     [Tooltip("ตำแหน่งเริ่มต้นของบันไดชิ้นแรกสุดใน Scene")]
@@ -24,10 +24,20 @@ public class PTModularLoopManager : MonoBehaviour
     [Header("Notification Settings")]
     public bool showDebugLog = true;
 
+    // เพิ่มตัวแปรเช็กสถานะการล็อกที่ด้านบนของคลาส PTModularLoopManager
+    private bool lockPlaylistOverride = false;
+    [Header("Prefab ถาวรหลังทำเงื่อนไขสำเร็จ")]
+    public GameObject globalWinPrefab; // หรือเก็บค่าจากที่ส่งมา
+
     [System.Serializable]
     public class LoopStage
     {
         public string stageName = "Staircase Loop Stage";
+
+        [Header("Custom Prefab for this Loop")]
+        [Tooltip("ถ้าเว้นว่างไว้ จะใช้ Stair Prefab หลัก แต่ถ้าใส่ Prefab ตรงนี้ ลูปนี้จะใช้ Prefab นี้แทนทันที")]
+        public GameObject customStairPrefab;
+
         [TextArea(2, 4)]
         public string customNotification = "Walking up higher...";
 
@@ -59,20 +69,17 @@ public class PTModularLoopManager : MonoBehaviour
             nextSpawnPoint = tempPoint.transform;
         }
 
-        // สร้างบันไดเริ่มต้นล่วงหน้าตามจำนวนที่กำหนด
         for (int i = 0; i < maxActiveStairs; i++)
         {
             SpawnNewStair();
         }
     }
 
-    // ฟังก์ชันนี้ถูกเรียกเมื่อผู้เล่นเดินขึ้นไปถึง Trigger ปลายบันได
     public void OnPlayerReachTrigger()
     {
-        // 1. สร้างบันไดชุดใหม่ต่อขึ้นไปข้างบน
+        AdvanceToNextLoop();
         SpawnNewStair();
 
-        // 2. ลบบันไดชุดเก่าที่สุดทิ้ง (เพื่อเคลียร์แรมและรักษาความยาว)
         if (activeStairs.Count > maxActiveStairs)
         {
             GameObject oldStair = activeStairs.Dequeue();
@@ -81,34 +88,41 @@ public class PTModularLoopManager : MonoBehaviour
                 Destroy(oldStair);
             }
         }
-
-        // 3. ขยับ Playlist และรัน Event ประจำลูป
-        AdvanceToNextLoop();
     }
 
     private void SpawnNewStair()
     {
-        if (stairPrefab == null) return;
+        GameObject prefabToSpawn = stairPrefab;
+        if (playlist.Count > 0 && currentLoopIndex < playlist.Count)
+        {
+            GameObject stageCustomPrefab = playlist[currentLoopIndex].customStairPrefab;
+            if (stageCustomPrefab != null)
+            {
+                prefabToSpawn = stageCustomPrefab;
+            }
+        }
 
-        // สร้างบันไดใหม่ตามตำแหน่งและองศาของ NextPoint ชิ้นก่อนหน้า
-        GameObject newStair = Instantiate(stairPrefab, nextSpawnPoint.position, nextSpawnPoint.rotation);
+        if (prefabToSpawn == null) return;
 
+        GameObject newStair = Instantiate(prefabToSpawn, nextSpawnPoint.position, nextSpawnPoint.rotation);
         activeStairs.Enqueue(newStair);
 
-        // ค้นหาจุดเชื่อมต่อ (NextPoint) ที่ปลายทางออกด้านบนของบันได Prefab
         Transform connector = newStair.transform.Find("NextPoint");
         if (connector != null)
         {
-            nextSpawnPoint = connector; // จุดเกิดถัดไปจะถูกพาทยายขึ้นไปตามความสูงและทิศทางของบันได
+            nextSpawnPoint = connector;
         }
         else
         {
-            Debug.LogWarning("ไม่พบ GameObject ลูกชื่อ 'NextPoint' ที่ปลายบันได กรุณาสร้างไว้ที่จุดสิ้นสุดของ Prefab บันไดด้วยครับ!");
+            Debug.LogWarning($"[PT System] ไม่พบ GameObject ลูกชื่อ 'NextPoint' ที่ปลาย Prefab ของลูป [{currentLoopIndex}] กรุณาสร้างไว้ด้วยครับ!");
         }
     }
 
     private void AdvanceToNextLoop()
     {
+        // ถ้าถูกล็อกด้วยระบบ Win/End แล้ว จะไม่ให้ขยับไปลูปอื่นใน Playlist อีก
+        if (lockPlaylistOverride) return;
+
         if (playlist.Count == 0) return;
 
         currentLoopIndex++;
@@ -134,7 +148,35 @@ public class PTModularLoopManager : MonoBehaviour
 
         if (showDebugLog)
         {
-            Debug.Log($"🧗 [Staircase Loop] สร้างบันไดใหม่ขึ้นไปชั้นบน | กำลังเล่นลูป: [{currentLoopIndex}] - {currentStage.stageName}\n📢 {currentStage.customNotification}");
+            Debug.Log($"🧗 [Staircase Loop] เข้าสู่ลูป: [{currentLoopIndex}] - {currentStage.stageName}\n📢 {currentStage.customNotification}");
+        }
+    }
+
+    // ==========================================
+    // ฟังก์ชันสำหรับเรียกผ่าน UnityEvent (เช่น จาก InstantEventItem)
+    // เพื่อเปลี่ยน Prefab ของลูปปัจจุบันทันที
+    // ==========================================
+    // ฟังก์ชันสำหรับล็อกและเปลี่ยน Prefab ถาวร
+    public void ForceOverridePrefab(GameObject newPrefabToUse)
+    {
+        if (newPrefabToUse != null)
+        {
+            // 1. สั่งล็อกไม่ให้ Playlist ทำงานต่อ
+            lockPlaylistOverride = true;
+
+            // 2. บังคับเปลี่ยน Custom Prefab ของลูปปัจจุบันและลูปต่อๆ ไปให้ใช้ Win/End Prefab นี้ทั้งหมด
+            if (playlist.Count > 0 && currentLoopIndex < playlist.Count)
+            {
+                playlist[currentLoopIndex].customStairPrefab = newPrefabToUse;
+            }
+
+            // เพิ่มเติม: กำหนดให้ stairPrefab หลักกลายเป็น Prefab นี้ด้วย เพื่อให้เวลาสร้างชิ้นใหม่ต่อๆ ไปใช้ตัวนี้ยาวๆ
+            stairPrefab = newPrefabToUse;
+
+            if (showDebugLog)
+            {
+                Debug.Log($"🎉 [PT System] ล็อกระบบ Playlist สำเร็จ! ตั้งแต่ลูปนี้เป็นต้นไปจะสร้าง Prefab '{newPrefabToUse.name}' เท่านั้น");
+            }
         }
     }
 }

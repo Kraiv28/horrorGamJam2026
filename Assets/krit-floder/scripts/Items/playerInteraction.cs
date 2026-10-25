@@ -57,11 +57,8 @@ public class playerInteraction : MonoBehaviour
     /// </summary>
     void UpdateMousePointerUI()
     {
-        // ป้องกัน Error หากยังไม่ได้ใส่ข้อมูล UI ใน Inspector
         if (pointerUI == null || defaultPointerSprite == null || itemHoverPointerSprite == null || conditionalAnimHoverSprite == null) return;
 
-        // --- เงื่อนไขที่เพิ่มเข้ามาใหม่ ---
-        // ถ้าคัตซีนหรือแอนิเมชั่นกำลังทำงานอยู่ ให้บังคับเป้าเล็งเป็นแบบปกติทันที ไม่ต้องคำนวณ Raycast ด้านล่างต่อ
         if (conditionalAnimationInteractable.IsAnyAnimationPlaying)
         {
             pointerUI.sprite = defaultPointerSprite;
@@ -69,33 +66,42 @@ public class playerInteraction : MonoBehaviour
         }
 
         RaycastHit hit;
-
-        // ผสม LayerMask ทั้งไอเทมทั่วไปและวัตถุอินเตอร์แอคเข้าด้วยกันเพื่อยิงสายตาไปเช็กทีเดียว
         LayerMask combinedMask = itemLayer | interactableLayer;
 
         if (Physics.Raycast(transform.position, transform.forward, out hit, interactionRange, combinedMask))
         {
-            // เคสที่ 1: มองไปเจอไอเทมที่เก็บได้ (เช่น ชะแลง, กุญแจที่วางอยู่บนพื้น)
+            // 1. ถ้ามองเจอไอเทมทั่วไป (itemObject)
             if (hit.collider.TryGetComponent(out itemObject itemObj))
             {
-                // เปลี่ยนเป้าก็ต่อเมื่อในมือเรายังว่างอยู่
                 if (currentHeldItemId == -1)
                 {
                     pointerUI.sprite = itemHoverPointerSprite;
-                    return; // คืนค่าออกทันทีเมื่อตรงเงื่อนไข
+                    return;
                 }
             }
 
-            // เคสที่ 2: มองไปเจอวัตถุคัตซีนที่ต้องการไอเทม (conditionalAnimationInteractable)
+            // [เพิ่มเข้ามาใหม่ตรงนี้] 2. ถ้ามองเจอไอเทมพิเศษ (InstantEventItem)
+            if (hit.collider.TryGetComponent(out InstantEventItem instantItem))
+            {
+                pointerUI.sprite = itemHoverPointerSprite; // ใช้รูปไอคอนหยิบของเหมือนกัน
+                return;
+            }
+
+            // 3. ถ้ามองเจอวัตถุคัตซีน (conditionalAnimationInteractable)
             if (hit.collider.TryGetComponent(out conditionalAnimationInteractable animInteractable))
             {
-                // เปลี่ยนเป้าเป็นรูปสำหรับจุดคัตซีนทันที (โชว์เพื่อให้รู้ว่าตรงนี้กดใช้ของได้)
                 pointerUI.sprite = conditionalAnimHoverSprite;
-                return; // คืนค่าออกทันทีเมื่อตรงเงื่อนไข
+                return;
             }
         }
 
-        // เคสที่ 3: ถ้าส่องไปไม่เจออะไรเลย หรือเจอสิ่งที่ไม่เกี่ยวข้องกัน -> คืนค่าเป้าจุดกลมสีขาวปกติ
+        // เพิ่มการเช็ก NoteItem เข้าไปใน Raycast
+        if (hit.collider.TryGetComponent(out NoteItem noteObj))
+        {
+            pointerUI.sprite = itemHoverPointerSprite; // ใช้รูปไอคอนชี้ของได้เลย
+            return;
+        }
+
         pointerUI.sprite = defaultPointerSprite;
     }
 
@@ -106,6 +112,7 @@ public class playerInteraction : MonoBehaviour
 
         if (Physics.Raycast(transform.position, transform.forward, out hit, interactionRange, combinedMask))
         {
+            // 1. เช็กไอเทมทั่วไป (เก็บเข้ามือ)
             if (hit.collider.TryGetComponent(out itemObject itemObj))
             {
                 if (currentHeldItemId != -1)
@@ -118,6 +125,20 @@ public class playerInteraction : MonoBehaviour
                 return;
             }
 
+            // [เพิ่มเข้ามาใหม่ตรงนี้] 2. เช็กไอเทมพิเศษ (กดปุ๊บ ทำงานปั๊บ ของไม่เข้ามือ)
+            if (hit.collider.TryGetComponent(out InstantEventItem instantItemObj))
+            {
+                instantItemObj.PickUpInstant(); // สั่งรันเสียงและ Unity Event ของตัวไอเทม
+
+                // เล่นเอฟเฟกต์กล้องตอนหยิบ (ถ้าต้องการให้หน้าจอขยับเล็กน้อย)
+                if (camEffects != null)
+                {
+                    camEffects.ApplyPickupLean(pickupLeanIntensity);
+                }
+                return;
+            }
+
+            // 3. เช็กวัตถุคัตซีนอื่นๆ (ตามโค้ดเดิมของคุณ)
             if (hit.collider.TryGetComponent(out conditionalInteractable conditionalObj))
             {
                 conditionalObj.Interact(currentHeldItemId);
@@ -127,6 +148,13 @@ public class playerInteraction : MonoBehaviour
             if (hit.collider.TryGetComponent(out conditionalAnimationInteractable animInteractable))
             {
                 animInteractable.Interact(currentHeldItemId, this);
+                return;
+            }
+
+            // เพิ่มการเช็ก NoteItem เข้าไปตอนคลิกเมาส์
+            if (hit.collider.TryGetComponent(out NoteItem noteObjInstance))
+            {
+                noteObjInstance.ReadNote();
                 return;
             }
         }
