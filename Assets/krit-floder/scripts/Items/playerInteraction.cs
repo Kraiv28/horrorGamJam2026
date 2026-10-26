@@ -157,6 +157,19 @@ public class playerInteraction : MonoBehaviour
                 noteObjInstance.ReadNote();
                 return;
             }
+
+            // เพิ่มเช็ก TransitionDoor ใน CheckInteraction()
+            if (hit.collider.TryGetComponent(out TransitionDoor doorObj))
+            {
+                doorObj.InteractWithDoor();
+                return;
+            }
+
+            if (hit.collider.TryGetComponent(out TestEventTrigger testTrigger))
+            {
+                testTrigger.Interact();
+                return;
+            }
         }
     }
 
