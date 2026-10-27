@@ -8,26 +8,27 @@ public class SubtitleTrigger : MonoBehaviour
     public string subtitleMessage = "นี่คือข้อความทดสอบระบบไดอาลอคสไตล์ P.T.";
     [Tooltip("ระยะเวลาที่จะค้างข้อความไว้บนจอก่อนจะเลื่อนเก็บ (วินาที)")]
     public float displayDuration = 3.0f;
+    [Tooltip("กำหนดสีของข้อความสำหรับ Trigger นี้")]
+    public Color subtitleColor = Color.white; // ค่าเริ่มต้นเป็นสีขาว
 
     [Header("Trigger Settings")]
     [Tooltip("ให้ทำงานแค่ครั้งเดียวแล้วปิดตัวเองหรือไม่?")]
     public bool triggerOnce = true;
 
-    private bool hasTriggered = false; // แก้ไขชื่อตัวแปรให้ถูกต้อง
+    private bool hasTriggered = false;
 
     private void OnTriggerEnter(Collider other)
     {
         if (hasTriggered && triggerOnce) return;
 
-        // เช็กว่าเป็นผู้เล่นเดินมาชนหรือไม่ (ใช้ Tag 'Player')
         if (other.CompareTag("Player"))
         {
             if (SubtitleUIController.Instance != null)
             {
-                SubtitleUIController.Instance.ShowSubtitle(subtitleMessage, displayDuration);
+                // ส่งค่าสี (subtitleColor) ไปด้วย
+                SubtitleUIController.Instance.ShowSubtitle(subtitleMessage, displayDuration, subtitleColor);
                 hasTriggered = true;
 
-                // ถ้าตั้งค่าให้ทำงานครั้งเดียว สามารถปิด Collider หรือทำลาย GameObject นี้ทิ้งได้หลังเล่นจบ
                 if (triggerOnce)
                 {
                     GetComponent<Collider>().enabled = false;

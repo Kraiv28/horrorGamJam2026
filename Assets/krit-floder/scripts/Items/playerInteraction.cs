@@ -170,6 +170,20 @@ public class playerInteraction : MonoBehaviour
                 testTrigger.Interact();
                 return;
             }
+
+            // 1. เช็กประตูทั่วไป (DoorInteractable) โดยใช้ชื่อตัวแปรว่า doorInteractable เพื่อไม่ให้ซ้ำกับของเดิม
+            if (hit.collider.TryGetComponent(out DoorInteractable doorInteractable))
+            {
+                doorInteractable.Interact(currentHeldItemId);
+                return;
+            }
+
+            // 2. เช็ก TransitionDoor (ของเดิมที่มีอยู่แล้ว) ใช้ชื่อฟังก์ชันเดิมคือ InteractWithDoor()
+            if (hit.collider.TryGetComponent(out TransitionDoor transitionDoorObj))
+            {
+                transitionDoorObj.InteractWithDoor();
+                return;
+            }
         }
     }
 
