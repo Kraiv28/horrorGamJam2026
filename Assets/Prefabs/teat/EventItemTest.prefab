@@ -111,7 +111,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   autoTriggerLoopManager: 1
-  targetOverridePrefab: {fileID: 5428082648296355720, guid: daa361f97a0d9094ca7f0015094e81c3, type: 3}
+  targetOverridePrefab: {fileID: 8248124214052888081, guid: ba97d5c82659a0e45bcb662707042415, type: 3}
   destroyOnPickup: 1
 --- !u!65 &101203504656034384
 BoxCollider:

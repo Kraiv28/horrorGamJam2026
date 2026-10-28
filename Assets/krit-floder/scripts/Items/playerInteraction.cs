@@ -7,6 +7,7 @@ public class playerInteraction : MonoBehaviour
     public float interactionRange = 3f;
     public LayerMask itemLayer;
     public LayerMask interactableLayer;
+    public LayerMask noteLayer; // เลเยอร์สำหรับโน้ต (เพิ่มใหม่)
 
     [Header("Hold Settings")]
     public Transform itemHolder;
@@ -27,6 +28,8 @@ public class playerInteraction : MonoBehaviour
     public Sprite itemHoverPointerSprite;
     [Tooltip("รูปเป้าเล็งที่จะเปลี่ยนไป เมื่อผู้เล่นหันไปชี้ วัตถุคัตซีนที่ต้องการไอเทมในการเปิดใช้งาน")]
     public Sprite conditionalAnimHoverSprite;
+    [Tooltip("รูปเป้าเล็งเมื่อมองโดนโน้ต (ใช้รูปเดียวกับไอเทมหรือแยกก็ได้)")]
+    public Sprite noteHoverPointerSprite; // เพิ่มใหม่
 
     void Update()
     {
@@ -57,7 +60,7 @@ public class playerInteraction : MonoBehaviour
     /// </summary>
     void UpdateMousePointerUI()
     {
-        if (pointerUI == null || defaultPointerSprite == null || itemHoverPointerSprite == null || conditionalAnimHoverSprite == null) return;
+        if (pointerUI == null || defaultPointerSprite == null) return;
 
         if (conditionalAnimationInteractable.IsAnyAnimationPlaying)
         {
@@ -66,40 +69,42 @@ public class playerInteraction : MonoBehaviour
         }
 
         RaycastHit hit;
-        LayerMask combinedMask = itemLayer | interactableLayer;
+        // รวม noteLayer เข้าไปในการตรวจจับด้วย
+        LayerMask combinedMask = itemLayer | interactableLayer | noteLayer;
 
         if (Physics.Raycast(transform.position, transform.forward, out hit, interactionRange, combinedMask))
         {
             // 1. ถ้ามองเจอไอเทมทั่วไป (itemObject)
             if (hit.collider.TryGetComponent(out itemObject itemObj))
             {
-                if (currentHeldItemId == -1)
+                if (currentHeldItemId == -1 && itemHoverPointerSprite != null)
                 {
                     pointerUI.sprite = itemHoverPointerSprite;
                     return;
                 }
             }
 
-            // [เพิ่มเข้ามาใหม่ตรงนี้] 2. ถ้ามองเจอไอเทมพิเศษ (InstantEventItem)
+            // 2. ถ้ามองเจอไอเทมพิเศษ (InstantEventItem)
             if (hit.collider.TryGetComponent(out InstantEventItem instantItem))
             {
-                pointerUI.sprite = itemHoverPointerSprite; // ใช้รูปไอคอนหยิบของเหมือนกัน
+                if (itemHoverPointerSprite != null) pointerUI.sprite = itemHoverPointerSprite;
                 return;
             }
 
             // 3. ถ้ามองเจอวัตถุคัตซีน (conditionalAnimationInteractable)
             if (hit.collider.TryGetComponent(out conditionalAnimationInteractable animInteractable))
             {
-                pointerUI.sprite = conditionalAnimHoverSprite;
+                if (conditionalAnimHoverSprite != null) pointerUI.sprite = conditionalAnimHoverSprite;
                 return;
             }
-        }
 
-        // เพิ่มการเช็ก NoteItem เข้าไปใน Raycast
-        if (hit.collider.TryGetComponent(out NoteItem noteObj))
-        {
-            pointerUI.sprite = itemHoverPointerSprite; // ใช้รูปไอคอนชี้ของได้เลย
-            return;
+            // 4. [เพิ่มเข้ามาใหม่] ถ้ามองเจอโน้ต (NoteController)
+            if (hit.collider.TryGetComponent(out NoteController noteObj))
+            {
+                // ถ้ามีรูปแยกให้ใช้รูปโน้ต ถ้าไม่มีให้ใช้รูปไอเทมแทน
+                pointerUI.sprite = noteHoverPointerSprite != null ? noteHoverPointerSprite : itemHoverPointerSprite;
+                return;
+            }
         }
 
         pointerUI.sprite = defaultPointerSprite;
@@ -108,10 +113,18 @@ public class playerInteraction : MonoBehaviour
     void CheckInteraction()
     {
         RaycastHit hit;
-        LayerMask combinedMask = itemLayer | interactableLayer;
+        LayerMask combinedMask = itemLayer | interactableLayer | noteLayer;
 
+        // ยิง Raycast เช็กวัตถุ
         if (Physics.Raycast(transform.position, transform.forward, out hit, interactionRange, combinedMask))
         {
+            // [เพิ่มเข้ามาใหม่] เช็กโน้ต (เปิดอ่าน)
+            if (hit.collider.TryGetComponent(out NoteController noteObj))
+            {
+                noteObj.ShowNote();
+                return;
+            }
+
             // 1. เช็กไอเทมทั่วไป (เก็บเข้ามือ)
             if (hit.collider.TryGetComponent(out itemObject itemObj))
             {
@@ -125,12 +138,10 @@ public class playerInteraction : MonoBehaviour
                 return;
             }
 
-            // [เพิ่มเข้ามาใหม่ตรงนี้] 2. เช็กไอเทมพิเศษ (กดปุ๊บ ทำงานปั๊บ ของไม่เข้ามือ)
+            // 2. เช็กไอเทมพิเศษ (InstantEventItem)
             if (hit.collider.TryGetComponent(out InstantEventItem instantItemObj))
             {
-                instantItemObj.PickUpInstant(); // สั่งรันเสียงและ Unity Event ของตัวไอเทม
-
-                // เล่นเอฟเฟกต์กล้องตอนหยิบ (ถ้าต้องการให้หน้าจอขยับเล็กน้อย)
+                instantItemObj.PickUpInstant();
                 if (camEffects != null)
                 {
                     camEffects.ApplyPickupLean(pickupLeanIntensity);
@@ -138,7 +149,7 @@ public class playerInteraction : MonoBehaviour
                 return;
             }
 
-            // 3. เช็กวัตถุคัตซีนอื่นๆ (ตามโค้ดเดิมของคุณ)
+            // 3. เช็กวัตถุคัตซีน (conditionalInteractable)
             if (hit.collider.TryGetComponent(out conditionalInteractable conditionalObj))
             {
                 conditionalObj.Interact(currentHeldItemId);
@@ -151,14 +162,7 @@ public class playerInteraction : MonoBehaviour
                 return;
             }
 
-            // เพิ่มการเช็ก NoteItem เข้าไปตอนคลิกเมาส์
-            if (hit.collider.TryGetComponent(out NoteItem noteObjInstance))
-            {
-                noteObjInstance.ReadNote();
-                return;
-            }
-
-            // เพิ่มเช็ก TransitionDoor ใน CheckInteraction()
+            // 4. เช็กประตูและอื่นๆ ต่อตามเดิม...
             if (hit.collider.TryGetComponent(out TransitionDoor doorObj))
             {
                 doorObj.InteractWithDoor();
@@ -171,17 +175,9 @@ public class playerInteraction : MonoBehaviour
                 return;
             }
 
-            // 1. เช็กประตูทั่วไป (DoorInteractable) โดยใช้ชื่อตัวแปรว่า doorInteractable เพื่อไม่ให้ซ้ำกับของเดิม
             if (hit.collider.TryGetComponent(out DoorInteractable doorInteractable))
             {
                 doorInteractable.Interact(currentHeldItemId);
-                return;
-            }
-
-            // 2. เช็ก TransitionDoor (ของเดิมที่มีอยู่แล้ว) ใช้ชื่อฟังก์ชันเดิมคือ InteractWithDoor()
-            if (hit.collider.TryGetComponent(out TransitionDoor transitionDoorObj))
-            {
-                transitionDoorObj.InteractWithDoor();
                 return;
             }
         }
