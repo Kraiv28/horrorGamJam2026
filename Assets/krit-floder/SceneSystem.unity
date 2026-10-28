@@ -5898,7 +5898,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca38602e2dbab4848899e5fe8038132b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PTModularLoopManager
-  stairPrefab: {fileID: 1935085483855073609, guid: cfe02be6caf0885489424d410dafadfa, type: 3}
+  stairPrefab: {fileID: 860632678962833296, guid: ca74d824f273f4341806355efc7c06be, type: 3}
   initialSpawnPoint: {fileID: 600865465}
   maxActiveStairs: 2
   currentLoopIndex: 0
@@ -5907,7 +5907,7 @@ MonoBehaviour:
   globalWinPrefab: {fileID: 0}
   playlist:
   - stageName: 1
-    customStairPrefab: {fileID: 1935085483855073609, guid: cfe02be6caf0885489424d410dafadfa, type: 3}
+    customStairPrefab: {fileID: 860632678962833296, guid: ca74d824f273f4341806355efc7c06be, type: 3}
     customNotification: 1
     onLoopEnter:
       m_PersistentCalls:
@@ -5925,19 +5925,19 @@ MonoBehaviour:
             m_BoolArgument: 0
           m_CallState: 2
   - stageName: 2
-    customStairPrefab: {fileID: 1935085483855073609, guid: cfe02be6caf0885489424d410dafadfa, type: 3}
+    customStairPrefab: {fileID: 6853679656460884204, guid: 29030d68ca0bce647a072bc2fd0059ea, type: 3}
     customNotification: 2
     onLoopEnter:
       m_PersistentCalls:
         m_Calls: []
   - stageName: 3
-    customStairPrefab: {fileID: 0}
+    customStairPrefab: {fileID: 2094176581949104799, guid: 190881bdf3834d649b35cff37339c655, type: 3}
     customNotification: 3
     onLoopEnter:
       m_PersistentCalls:
         m_Calls: []
   - stageName: 4
-    customStairPrefab: {fileID: 1935085483855073609, guid: cfe02be6caf0885489424d410dafadfa, type: 3}
+    customStairPrefab: {fileID: 860632678962833296, guid: ca74d824f273f4341806355efc7c06be, type: 3}
     customNotification: 4
     onLoopEnter:
       m_PersistentCalls:
