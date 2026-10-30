@@ -169,9 +169,10 @@ public class playerInteraction : MonoBehaviour
                 return;
             }
 
-            if (hit.collider.TryGetComponent(out TestEventTrigger testTrigger))
+            // เช็กประตูแบบแยก (SeparateTransitionDoor)
+            if (hit.collider.TryGetComponent(out SeparateTransitionDoor sepDoor))
             {
-                testTrigger.Interact();
+                sepDoor.InteractWithDoor();
                 return;
             }
 

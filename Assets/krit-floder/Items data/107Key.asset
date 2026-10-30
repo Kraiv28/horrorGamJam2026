@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemId: 3
   itemName: 107 key
-  itemPrefab: {fileID: 865612800043799341, guid: 0bab2c17bb77b4b4f8b7255fa34d210b, type: 3}
+  itemPrefab: {fileID: 5710957916252224650, guid: 39f24d5a544c27b42bbe4685d99597f5, type: 3}

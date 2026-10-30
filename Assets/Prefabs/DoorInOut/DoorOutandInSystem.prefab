@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8219345532198604245}
   - component: {fileID: 553310282198822964}
   - component: {fileID: 5815474130126951374}
-  - component: {fileID: 4031437677594121327}
+  - component: {fileID: 6603221480601391074}
   - component: {fileID: 2803889972340322978}
   m_Layer: 9
   m_Name: inDoorTtest
@@ -32,7 +32,8 @@ Transform:
   m_LocalPosition: {x: 0.6082001, y: -1.5988599, z: 4.7042303}
   m_LocalScale: {x: 0.35822, y: 5, z: 4}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2294701585392173396}
   m_Father: {fileID: 2939633006525019007}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &553310282198822964
@@ -92,7 +93,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4031437677594121327
+--- !u!114 &6603221480601391074
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -101,22 +102,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 2391774749487857635}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4506baed9097d1c4eb5bbd474170819c, type: 3}
+  m_Script: {fileID: 11500000, guid: 1e85cc5d1e1fb124e9038141ebcc4f70, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TransitionDoor
+  m_EditorClassIdentifier: Assembly-CSharp::SeparateTransitionDoor
   doorType: 1
-  isUnlocked: 0
-  lockedMessage: "\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E2B\u0E49\u0E2D\u0E07\u0E19\u0E49\u0E33\u0E16\u0E39\u0E01\u0E25\u0E47\u0E2D\u0E01...
-    \u0E15\u0E49\u0E2D\u0E07\u0E17\u0E33\u0E40\u0E07\u0E37\u0E48\u0E2D\u0E19\u0E44\u0E02\u0E1A\u0E32\u0E07\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E01\u0E48\u0E2D\u0E19"
-  teleportTargetPoint: {fileID: 8610632784394123903}
-  transitionDelay: 2
-  audioSource: {fileID: 0}
-  lockedSound: {fileID: 0}
-  openSound: {fileID: 8300000, guid: 3b6c3c2fbacb8a14798043de39ee8c8a, type: 3}
-  closeSound: {fileID: 8300000, guid: 91894e496fbc60e458311455c6a1efa7, type: 3}
-  onDoorOpenedEvent:
+  targetPosition: {fileID: 8610632784394123903}
+  isConditionMet: 1
+  onConditionFailed:
     m_PersistentCalls:
       m_Calls: []
+  onConditionPassed:
+    m_PersistentCalls:
+      m_Calls: []
+  delayDuration: 2
+  audioSource: {fileID: 0}
+  lockedSound: {fileID: 0}
+  openDoorSound: {fileID: 0}
+  closeDoorSound: {fileID: 0}
 --- !u!65 &2803889972340322978
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -169,8 +171,6 @@ Transform:
   m_Children:
   - {fileID: 9122000861568936914}
   - {fileID: 8219345532198604245}
-  - {fileID: 2294701585392173396}
-  - {fileID: 8610632784394123903}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6743970464135396950
@@ -198,11 +198,11 @@ Transform:
   m_GameObject: {fileID: 6743970464135396950}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.1582003, y: -2.5188599, z: 4.8470798}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 7.1185308, y: -0.184, z: 0.0357126}
+  m_LocalScale: {x: 2.7915807, y: 0.2, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2939633006525019007}
+  m_Father: {fileID: 8219345532198604245}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8371387500614971452
 GameObject:
@@ -215,7 +215,7 @@ GameObject:
   - component: {fileID: 9122000861568936914}
   - component: {fileID: 2236924048219760732}
   - component: {fileID: 3685845717426388395}
-  - component: {fileID: 784106923458647071}
+  - component: {fileID: 1463675449531021093}
   - component: {fileID: 3136650615183055523}
   m_Layer: 9
   m_Name: OutDoorTtest
@@ -236,7 +236,8 @@ Transform:
   m_LocalPosition: {x: 0.17911005, y: -1.5988599, z: -1.55862}
   m_LocalScale: {x: 0.35822, y: 5, z: 4}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8610632784394123903}
   m_Father: {fileID: 2939633006525019007}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2236924048219760732
@@ -296,7 +297,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &784106923458647071
+--- !u!114 &1463675449531021093
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -305,34 +306,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 8371387500614971452}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4506baed9097d1c4eb5bbd474170819c, type: 3}
+  m_Script: {fileID: 11500000, guid: 1e85cc5d1e1fb124e9038141ebcc4f70, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TransitionDoor
+  m_EditorClassIdentifier: Assembly-CSharp::SeparateTransitionDoor
   doorType: 0
-  isUnlocked: 0
-  lockedMessage: "\u0E1B\u0E23\u0E30\u0E15\u0E39\u0E2B\u0E49\u0E2D\u0E07\u0E19\u0E49\u0E33\u0E16\u0E39\u0E01\u0E25\u0E47\u0E2D\u0E01...
-    \u0E15\u0E49\u0E2D\u0E07\u0E17\u0E33\u0E40\u0E07\u0E37\u0E48\u0E2D\u0E19\u0E44\u0E02\u0E1A\u0E32\u0E07\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E01\u0E48\u0E2D\u0E19"
-  teleportTargetPoint: {fileID: 2294701585392173396}
-  transitionDelay: 2
-  audioSource: {fileID: 0}
-  lockedSound: {fileID: 8300000, guid: a0bd577556e586b488ab4731c5242bc4, type: 3}
-  openSound: {fileID: 8300000, guid: 3b6c3c2fbacb8a14798043de39ee8c8a, type: 3}
-  closeSound: {fileID: 8300000, guid: 91894e496fbc60e458311455c6a1efa7, type: 3}
-  onDoorOpenedEvent:
+  targetPosition: {fileID: 2294701585392173396}
+  isConditionMet: 1
+  onConditionFailed:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
+      m_Calls: []
+  onConditionPassed:
+    m_PersistentCalls:
+      m_Calls: []
+  delayDuration: 2
+  audioSource: {fileID: 0}
+  lockedSound: {fileID: 0}
+  openDoorSound: {fileID: 0}
+  closeDoorSound: {fileID: 0}
 --- !u!65 &3136650615183055523
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -379,9 +369,9 @@ Transform:
   m_GameObject: {fileID: 8685582981830313085}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.8417997, y: -2.5188599, z: -1.41577}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -11.224697, y: -0.184, z: 0.0357126}
+  m_LocalScale: {x: 2.7915807, y: 0.2, z: 0.25}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2939633006525019007}
+  m_Father: {fileID: 9122000861568936914}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

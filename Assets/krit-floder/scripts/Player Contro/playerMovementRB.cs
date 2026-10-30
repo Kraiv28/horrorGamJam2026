@@ -28,7 +28,7 @@ public class playerMovementRB : MonoBehaviour
     public float playerRadius = 0.5f;
 
     [Tooltip("ระยะยิงเช็คขึ้นไปด้านบนนับจากจุดกึ่งกลางตัว (ถ้าหลังคาสูงกว่าค่านี้จะไม่หมอบ)")]
-    public float ceilingCheckDistance = 1.5f; // <--- เพิ่มตัวแปรนี้ให้ปรับระยะได้เอง
+    public float ceilingCheckDistance = 1.5f;
 
     [Header("Slope Handling")]
     public float maxSlopeAngle;
@@ -53,11 +53,26 @@ public class playerMovementRB : MonoBehaviour
     public static bool isRuning;
     public static bool isCrouching;
 
+    [Header("Footstep Settings")]
+    public AudioSource footstepAudioSource;
+    public AudioClip[] walkFootsteps;
+    public AudioClip[] sprintFootsteps;
+    public AudioClip[] crouchFootsteps;
+    public float walkStepInterval = 0.5f;
+    public float sprintStepInterval = 0.3f;
+    public float crouchStepInterval = 0.8f;
+    private float footstepTimer;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         startYScale = transform.localScale.y;
+
+        if (footstepAudioSource == null)
+        {
+            footstepAudioSource = GetComponent<AudioSource>();
+        }
     }
 
     private void Update()
@@ -67,6 +82,7 @@ public class playerMovementRB : MonoBehaviour
         MyInput();
         stateHandler();
         SpeedControl();
+        HandleFootsteps();
 
         if (grounded)
             rb.linearDamping = groundDrag;
@@ -123,9 +139,9 @@ public class playerMovementRB : MonoBehaviour
         if (isSlowedByCutscene)
         {
             moveSpeed = temporaryCutsceneSpeed;
-            state = movementState.walking; // ตั้งสถานะเป็นเดินปกติ
+            state = movementState.walking;
             isRuning = false;
-            return; // ออกจากฟังก์ชันทันที ไม่ให้คำสั่งด้านล่างมาเขียนทับค่านี้
+            return;
         }
         if (Input.GetKey(crouchKey) || IsCeilingAbove())
         {
@@ -202,17 +218,14 @@ public class playerMovementRB : MonoBehaviour
         return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
     }
 
-    // === ปรับปรุงให้คำนวณจากค่า ceilingCheckDistance ที่เรากำหนดเอง ===
     private bool IsCeilingAbove()
     {
         Vector3 rayOrigin = transform.position;
-        // ยิงเลเซอร์ทรงกลมขึ้นไปด้านบนตามระยะที่เราตั้งไว้ใน Inspector
         return Physics.SphereCast(rayOrigin, playerRadius, Vector3.up, out _, ceilingCheckDistance, whatIsCeiling);
     }
 
     private void OnDrawGizmosSelected()
     {
-        // วาดเส้นจำลองระยะในหน้า Scene เพื่อให้ตั้งค่าได้ง่าย
         Gizmos.color = Color.red;
         Vector3 endPoint = transform.position + Vector3.up * ceilingCheckDistance;
         Gizmos.DrawWireSphere(endPoint, playerRadius);
@@ -225,5 +238,66 @@ public class playerMovementRB : MonoBehaviour
     {
         isSlowedByCutscene = shouldSlow;
         temporaryCutsceneSpeed = speedValue;
+    }
+
+    // === ระบบจัดการเสียงเดิน (Footsteps Logic) ===
+    private void HandleFootsteps()
+    {
+        // เช็คว่าอยู่บนพื้นและมีการกดปุ่มเดิน (มีค่า Input แนวตั้งหรือแนวนอน)
+        if (!grounded || state == movementState.air) return;
+
+        if (Mathf.Abs(horizontalI) > 0.1f || Mathf.Abs(verticalIP) > 0.1f)
+        {
+            float currentInterval = walkStepInterval;
+
+            if (state == movementState.runing)
+            {
+                currentInterval = sprintStepInterval;
+            }
+            else if (state == movementState.crouching)
+            {
+                currentInterval = crouchStepInterval;
+            }
+
+            footstepTimer += Time.deltaTime;
+
+            if (footstepTimer >= currentInterval)
+            {
+                PlayFootstepSound();
+                footstepTimer = 0f;
+            }
+        }
+        else
+        {
+            // รีเซ็ต Timer ทันทีเมื่อหยุดเดิน เพื่อให้ก้าวแรกดังทันทีที่เริ่มเดินใหม่
+            footstepTimer = walkStepInterval;
+        }
+    }
+
+    private void PlayFootstepSound()
+    {
+        if (footstepAudioSource == null) return;
+
+        AudioClip[] clipsToPlay = walkFootsteps;
+
+        if (state == movementState.runing && sprintFootsteps != null && sprintFootsteps.Length > 0)
+        {
+            clipsToPlay = sprintFootsteps;
+        }
+        else if (state == movementState.crouching && crouchFootsteps != null && crouchFootsteps.Length > 0)
+        {
+            clipsToPlay = crouchFootsteps;
+        }
+        else if (walkFootsteps == null || walkFootsteps.Length == 0)
+        {
+            return; // ถ้าไม่ได้ใส่เสียงเดินไว้ ให้ข้าม
+        }
+
+        // สุ่มเสียงในอาเรย์เพื่อให้เสียงไม่จำเจ
+        AudioClip clip = clipsToPlay[Random.Range(0, clipsToPlay.Length)];
+        if (clip != null)
+        {
+            footstepAudioSource.PlayOneShot(clip);
+        }
     }
 }

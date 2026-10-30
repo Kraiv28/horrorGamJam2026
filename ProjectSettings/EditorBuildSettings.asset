@@ -6,8 +6,35 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/krit-floder/screenWarning.unity
+    guid: d63ab6778a7da0a4cbd77ac2d4947918
+  - enabled: 1
+    path: Assets/krit-floder/MenuScreen.unity
+    guid: 9520b245848b7bc48bea801fc5bb2dd3
+  - enabled: 1
+    path: Assets/krit-floder/01csreen.unity
+    guid: 1667e2d1706859f448c9ac848154262e
+  - enabled: 1
+    path: Assets/krit-floder/FertScene.unity
+    guid: 040542bac8709bf47ae9b008d7e75997
+  - enabled: 1
+    path: Assets/krit-floder/02csreen.unity
+    guid: 015d4b638f584ab4bb772e76b76e0527
+  - enabled: 1
+    path: Assets/krit-floder/SceneSystem.unity
+    guid: 7df84685ad0f9ed4ca5cec5f6f746c3f
+  - enabled: 1
+    path: Assets/krit-floder/03csreen.unity
+    guid: 74925447fbc3f4641aa500b8827d3709
+  - enabled: 1
+    path: Assets/krit-floder/bedroomScreen 1.unity
+    guid: 994e43caa5ad15f43afd758c6e0c18c2
+  - enabled: 1
+    path: Assets/krit-floder/04csreen.unity
+    guid: 1800bd179c9c97c4c8391f5aef6676a2
+  - enabled: 1
+    path: Assets/krit-floder/endScreen.unity
+    guid: 392fff37591464e43a189595d2b87e8f
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
